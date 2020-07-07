@@ -29,7 +29,5 @@ namespace RepairShop.Models
         {
             return new ApplicationDbContext();
         }
-
-        public System.Data.Entity.DbSet<RepairShop.Models.RepairOrder> RepairOrders { get; set; }
     }
 }

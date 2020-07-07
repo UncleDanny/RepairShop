@@ -6,12 +6,12 @@ namespace RepairShop.DAL
     public class ShopDbContext : DbContext
     {
         public ShopDbContext() 
-            : base("RepairShop")
+            : base("DefaultConnection")
         {
 
         }
 
-        public DbSet<RepairOrder> Orders { get; set; }
+        public DbSet<RepairOrder> RepairOrders { get; set; }
 
         public DbSet<Customer> Customers { get; set; }
 

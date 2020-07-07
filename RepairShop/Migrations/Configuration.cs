@@ -2,15 +2,15 @@ namespace RepairShop.Migrations
 {
     using System.Data.Entity.Migrations;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<RepairShop.Models.ApplicationDbContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<DAL.ShopDbContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
-            ContextKey = "RepairShop.Models.ApplicationDbContext";
+            ContextKey = "RepairShop.DAL.ShopDbContext";
         }
 
-        protected override void Seed(Models.ApplicationDbContext context)
+        protected override void Seed(DAL.ShopDbContext context)
         {
             //  This method will be called after migrating to the latest version.
 

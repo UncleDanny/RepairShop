@@ -173,9 +173,9 @@
     <Compile Include="Controllers\RepairOrdersController.cs" />
     <Compile Include="DAL\ShopDbContext.cs" />
     <Compile Include="Extensions\EnumHelpers.cs" />
-    <Compile Include="Migrations\202007061110322_init.cs" />
-    <Compile Include="Migrations\202007061110322_init.Designer.cs">
-      <DependentUpon>202007061110322_init.cs</DependentUpon>
+    <Compile Include="Migrations\202007061329185_CustomerUpdate.cs" />
+    <Compile Include="Migrations\202007061329185_CustomerUpdate.Designer.cs">
+      <DependentUpon>202007061329185_CustomerUpdate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AvailablePart.cs" />
@@ -271,8 +271,8 @@
     <Content Include="Scripts\jquery-3.4.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202007061110322_init.resx">
-      <DependentUpon>202007061110322_init.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202007061329185_CustomerUpdate.resx">
+      <DependentUpon>202007061329185_CustomerUpdate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

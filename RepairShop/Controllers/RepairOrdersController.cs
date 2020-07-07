@@ -1,4 +1,5 @@
-﻿using RepairShop.Models;
+﻿using RepairShop.DAL;
+using RepairShop.Models;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
@@ -8,8 +9,8 @@ namespace RepairShop.Controllers
 {
     public class RepairOrdersController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
-
+        private readonly ShopDbContext db = new ShopDbContext();
+        
         // GET: RepairOrders
         public ActionResult Index()
         {

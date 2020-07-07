@@ -4,10 +4,16 @@ namespace RepairShop.Models
 {
     public enum RepairOrderStatus
     {
+        [Display(Name = "Awaiting")]
+        Awaiting,
+
+        [Display(Name = "Pending")]
+        Pending,
+
         [Display(Name = "Awaiting Parts")]
         AwaitingParts,
-        Awaiting,
+
+        [Display(Name = "Done")]
         Done,
-        Pending,
     }
 }

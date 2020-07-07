@@ -16,7 +16,7 @@ namespace RepairShop.Models
 
         [DataType(DataType.Date), DisplayName("End Date")]
         public DateTime EndDate { get; set; }
-       
+
         public RepairOrderStatus Status { get; set; }
 
         public List<AvailablePart> AvailableParts { get; set; }

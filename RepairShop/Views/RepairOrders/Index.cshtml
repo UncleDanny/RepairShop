@@ -1,5 +1,7 @@
 ﻿@using RepairShop.Models
 @using RepairShop.Extensions
+@using System.Linq
+
 @model IEnumerable<RepairShop.Models.RepairOrder>
 
 @{
@@ -8,7 +10,7 @@
 
 <h2>Index</h2>
 
-<table class="table">
+<table class="table" id="centerTable">
     <tr>
         @foreach (RepairOrderStatus item in Enum.GetValues(typeof(RepairOrderStatus)))
         {
@@ -20,13 +22,13 @@
     <tr>
         @foreach (RepairOrderStatus item in Enum.GetValues(typeof(RepairOrderStatus)))
         {
-            <th style="width:25%">
-                @item.DisplayName()
-            </th>
+            <td style="width:25%">
+                @Html.Label(Model.Count(i => i.Status == item).ToString())
+            </td>
         }
     </tr>
-
 </table>
+
 <p>
     @Html.ActionLink("Create New", "Create")
 </p>
@@ -44,23 +46,46 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.StartDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EndDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Status)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
-        </td>
-    </tr>
-}
+    @foreach (var item in Model)
+    {
+        string GetColorString()
+        {
+            switch (item.Status)
+            {
+                case RepairOrderStatus.AwaitingParts:
+                    return "orange";
+
+                case RepairOrderStatus.Awaiting:
+                    return item.StartDate > DateTime.Today ? "red" : "white";
+
+                case RepairOrderStatus.Done:
+                    return "limegreen";
+
+                case RepairOrderStatus.Pending:
+                    return "yellow";
+
+                default:
+                    return "white";
+            }
+        }
+
+        string colorString = $"background-color: {GetColorString()}";
+        <tr style="@colorString">
+            <td>
+                @Html.DisplayFor(modelItem => item.StartDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EndDate)
+            </td>
+            <td>
+                @item.Status.DisplayName()
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.ID }) |
+                @Html.ActionLink("Details", "Details", new { id = item.ID }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ID })
+            </td>
+        </tr>
+    }
 
 </table>
