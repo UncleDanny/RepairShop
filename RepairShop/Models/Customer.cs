@@ -2,17 +2,7 @@
 
 namespace RepairShop.Models
 {
-    public class Customer
+    public class Customer : Person
     {
-        public int ID { get; set; }
-
-        [DisplayName("First Name")]
-        public string FirstName { get; set; }
-
-        [DisplayName("Last Name")]
-        public string LastName { get; set; }
-
-        [DisplayName("Full Name")]
-        public string FullName => $"{FirstName} {LastName}";
     }
 }

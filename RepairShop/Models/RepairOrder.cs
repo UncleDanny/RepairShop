@@ -11,6 +11,8 @@ namespace RepairShop.Models
 
         public Customer Customer { get; set; }
 
+        public Reparateur Reparateur { get set; }
+
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         [DataType(DataType.Date), DisplayName("Start Date"), Required]
         public DateTime StartDate { get; set; }
