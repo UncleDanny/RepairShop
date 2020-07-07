@@ -35,6 +35,9 @@
 <table class="table">
     <tr>
         <th>
+            @Html.DisplayNameFor(model => model.Customer.FullName)
+        </th>
+        <th>
             @Html.DisplayNameFor(model => model.StartDate)
         </th>
         <th>
@@ -50,13 +53,18 @@
     {
         string GetColorString()
         {
+            if (item.StartDate > item.EndDate)
+            {
+                return "#f55";
+            }
+
             switch (item.Status)
             {
                 case RepairOrderStatus.AwaitingParts:
                     return "orange";
 
                 case RepairOrderStatus.Awaiting:
-                    return item.StartDate > DateTime.Today ? "red" : "white";
+                    return item.StartDate > DateTime.Today ? "white" : "#f55";
 
                 case RepairOrderStatus.Done:
                     return "limegreen";
@@ -69,13 +77,16 @@
             }
         }
 
-        string colorString = $"background-color: {GetColorString()}";
-        <tr style="@colorString">
+        string colorString = GetColorString();
+        <tr style="background-color: @colorString;">
             <td>
-                @Html.DisplayFor(modelItem => item.StartDate)
+                @Html.DisplayFor(model => item.Customer.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.EndDate)
+                @Html.DisplayFor(model => item.StartDate)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.EndDate)
             </td>
             <td>
                 @item.Status.DisplayName()

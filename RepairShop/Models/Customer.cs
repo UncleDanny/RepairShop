@@ -1,13 +1,18 @@
-﻿namespace RepairShop.Models
+﻿using System.ComponentModel;
+
+namespace RepairShop.Models
 {
     public class Customer
     {
         public int ID { get; set; }
 
+        [DisplayName("First Name")]
         public string FirstName { get; set; }
 
+        [DisplayName("Last Name")]
         public string LastName { get; set; }
 
-        public string FullName() => $"{FirstName} {LastName}";
+        [DisplayName("Full Name")]
+        public string FullName => $"{FirstName} {LastName}";
     }
 }

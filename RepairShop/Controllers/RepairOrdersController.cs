@@ -1,9 +1,11 @@
 ﻿using RepairShop.DAL;
 using RepairShop.Models;
+using RepairShop.View_Models;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
+using System.Web.UI.WebControls;
 
 namespace RepairShop.Controllers
 {
@@ -14,7 +16,7 @@ namespace RepairShop.Controllers
         // GET: RepairOrders
         public ActionResult Index()
         {
-            return View(db.RepairOrders.ToList());
+            return View(db.RepairOrders.Include(x => x.Customer).ToList());
         }
 
         // GET: RepairOrders/Details/5
@@ -25,7 +27,8 @@ namespace RepairShop.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            RepairOrder repairOrder = db.RepairOrders.Find(id);
+            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Customer)
+                                                     .SingleOrDefault(x => x.ID == id);
             if (repairOrder == null)
             {
                 return HttpNotFound();
@@ -37,7 +40,11 @@ namespace RepairShop.Controllers
         // GET: RepairOrders/Create
         public ActionResult Create()
         {
-            return View();
+            RepairOrdersViewModel model = new RepairOrdersViewModel
+            {
+                Customers = db.Customers.ToList()
+            };
+            return View(model);
         }
 
         // POST: RepairOrders/Create
@@ -45,16 +52,17 @@ namespace RepairShop.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ID,StartDate,EndDate,Status")] RepairOrder repairOrder)
+        public ActionResult Create(RepairOrdersViewModel repairOrderVM)
         {
             if (ModelState.IsValid)
             {
-                db.RepairOrders.Add(repairOrder);
+                repairOrderVM.RepairOrder.Customer = db.Customers.Find(repairOrderVM.RepairOrder.Customer.ID);
+                db.RepairOrders.Add(repairOrderVM.RepairOrder);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
-            return View(repairOrder);
+            return View(repairOrderVM);
         }
 
         // GET: RepairOrders/Edit/5
@@ -65,30 +73,48 @@ namespace RepairShop.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            RepairOrder repairOrder = db.RepairOrders.Find(id);
+            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Customer)
+                                                     .SingleOrDefault(x => x.ID == id);
             if (repairOrder == null)
             {
                 return HttpNotFound();
             }
 
-            return View(repairOrder);
+            RepairOrdersViewModel repairOrderVM = new RepairOrdersViewModel
+            {
+                Customers = db.Customers.ToList(),
+                RepairOrder = repairOrder,
+            };
+
+            return View(repairOrderVM);
         }
+
+        //[Bind(Include = "ID,StartDate,EndDate,Status")]
 
         // POST: RepairOrders/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ID,StartDate,EndDate,Status")] RepairOrder repairOrder)
+        public ActionResult Edit(RepairOrdersViewModel repairOrderVM)
         {
             if (ModelState.IsValid)
             {
+                RepairOrder repairOrder = db.RepairOrders.Include(p => p.Customer)
+                                                         .Single(p => p.ID == repairOrderVM.RepairOrder.ID);
+
+                if (repairOrderVM.RepairOrder.Customer.ID != repairOrder.Customer.ID)
+                {
+                    db.Customers.Attach(repairOrderVM.RepairOrder.Customer);
+                    repairOrder.Customer = repairOrderVM.RepairOrder.Customer;
+                }
+
                 db.Entry(repairOrder).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
-            return View(repairOrder);
+            return View(repairOrderVM);
         }
 
         // GET: RepairOrders/Delete/5
@@ -99,7 +125,8 @@ namespace RepairShop.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            RepairOrder repairOrder = db.RepairOrders.Find(id);
+            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Customer)
+                                                     .SingleOrDefault(x => x.ID == id);
             if (repairOrder == null)
             {
                 return HttpNotFound();
