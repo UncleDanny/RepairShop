@@ -11,11 +11,19 @@
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Customer.FullName)
+            @Html.DisplayNameFor(model => model.Customer)
         </dt>
 
         <dd>
             @Html.DisplayFor(model => model.Customer.FullName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Repairman)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Repairman.FullName)
         </dd>
 
         <dt>
@@ -42,6 +50,23 @@
             @Html.DisplayFor(model => model.Status)
         </dd>
 
+        <dt>
+            @Html.DisplayNameFor(model => model.RepairDescription)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.RepairDescription)
+        </dd>
+
+        <dt>
+            Total Price
+        </dt>
+        @{ 
+            decimal totalMoney = Model.Parts.Sum(x => x.Price * x.Count) + Model.Repairman.Wage;
+        }
+        <dd>
+            @Html.DisplayFor(i => totalMoney)
+        </dd>
     </dl>
 </div>
 <p>

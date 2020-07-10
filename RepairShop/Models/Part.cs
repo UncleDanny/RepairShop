@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RepairShop.Models
 {
@@ -13,6 +11,14 @@ namespace RepairShop.Models
 
         public string Type { get; set; }
 
+        [DataType(DataType.Currency)]
+        [DisplayFormat(DataFormatString = "{0:N}", ApplyFormatInEditMode = true)]
         public decimal Price { get; set; }
+
+        public string FullName => $"{Brand} {Type}";
+
+        public List<RepairOrder> Order { get; set; }
+
+        public int Count { get; set; }
     }
 }

@@ -5,8 +5,7 @@ using System.Web;
 
 namespace RepairShop.Models
 {
-	public class Reparateur : Person
-	{
-		public decimal Loon { get; set; }
-	}
+    public class AvailablePart
+    {
+    }
 }

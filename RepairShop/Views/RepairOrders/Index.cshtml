@@ -35,7 +35,10 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Customer.FullName)
+            @Html.DisplayNameFor(model => model.Customer)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Repairman)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.StartDate)
@@ -46,6 +49,7 @@
         <th>
             @Html.DisplayNameFor(model => model.Status)
         </th>
+        <th></th>
         <th></th>
     </tr>
 
@@ -77,10 +81,13 @@
             }
         }
 
-        string colorString = GetColorString();
-        <tr style="background-color: @colorString;">
+        string colorString = $"background-color: {GetColorString()};";
+        <tr style="@colorString">
             <td>
                 @Html.DisplayFor(model => item.Customer.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Repairman.FullName)
             </td>
             <td>
                 @Html.DisplayFor(model => item.StartDate)
@@ -95,6 +102,9 @@
                 @Html.ActionLink("Edit", "Edit", new { id = item.ID }) |
                 @Html.ActionLink("Details", "Details", new { id = item.ID }) |
                 @Html.ActionLink("Delete", "Delete", new { id = item.ID })
+            </td>
+            <td>
+                @Html.ActionLink("Edit Parts", "Parts", new { id = item.ID })
             </td>
         </tr>
     }

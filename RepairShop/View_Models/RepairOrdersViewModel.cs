@@ -7,8 +7,8 @@ namespace RepairShop.View_Models
     {
         public RepairOrder RepairOrder { get; set; }
 
-        public int CustomerID { get; set; }
-
         public List<Customer> Customers { get; set; }
+
+        public List<Repairman> Repairmen { get; set; }
     }
 }

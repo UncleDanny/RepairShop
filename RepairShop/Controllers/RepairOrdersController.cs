@@ -1,6 +1,7 @@
 ﻿using RepairShop.DAL;
 using RepairShop.Models;
 using RepairShop.View_Models;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
@@ -12,11 +13,11 @@ namespace RepairShop.Controllers
     public class RepairOrdersController : Controller
     {
         private readonly ShopDbContext db = new ShopDbContext();
-        
+
         // GET: RepairOrders
         public ActionResult Index()
         {
-            return View(db.RepairOrders.Include(x => x.Customer).ToList());
+            return View(db.RepairOrders.Include(x => x.Customer).Include(x => x.Repairman).ToList());
         }
 
         // GET: RepairOrders/Details/5
@@ -28,6 +29,8 @@ namespace RepairShop.Controllers
             }
 
             RepairOrder repairOrder = db.RepairOrders.Include(x => x.Customer)
+                                                     .Include(x => x.Repairman)
+                                                     .Include(x => x.Parts)
                                                      .SingleOrDefault(x => x.ID == id);
             if (repairOrder == null)
             {
@@ -42,7 +45,8 @@ namespace RepairShop.Controllers
         {
             RepairOrdersViewModel model = new RepairOrdersViewModel
             {
-                Customers = db.Customers.ToList()
+                Customers = db.Customers.ToList(),
+                Repairmen = db.Repairmen.ToList(),
             };
             return View(model);
         }
@@ -57,6 +61,7 @@ namespace RepairShop.Controllers
             if (ModelState.IsValid)
             {
                 repairOrderVM.RepairOrder.Customer = db.Customers.Find(repairOrderVM.RepairOrder.Customer.ID);
+                repairOrderVM.RepairOrder.Repairman = db.Repairmen.Find(repairOrderVM.RepairOrder.Repairman.ID);
                 db.RepairOrders.Add(repairOrderVM.RepairOrder);
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -74,6 +79,7 @@ namespace RepairShop.Controllers
             }
 
             RepairOrder repairOrder = db.RepairOrders.Include(x => x.Customer)
+                                                     .Include(x => x.Repairman)
                                                      .SingleOrDefault(x => x.ID == id);
             if (repairOrder == null)
             {
@@ -83,6 +89,7 @@ namespace RepairShop.Controllers
             RepairOrdersViewModel repairOrderVM = new RepairOrdersViewModel
             {
                 Customers = db.Customers.ToList(),
+                Repairmen = db.Repairmen.ToList(),
                 RepairOrder = repairOrder,
             };
 
@@ -101,6 +108,7 @@ namespace RepairShop.Controllers
             if (ModelState.IsValid)
             {
                 RepairOrder repairOrder = db.RepairOrders.Include(p => p.Customer)
+                                                         .Include(p => p.Repairman)
                                                          .Single(p => p.ID == repairOrderVM.RepairOrder.ID);
 
                 if (repairOrderVM.RepairOrder.Customer.ID != repairOrder.Customer.ID)
@@ -108,6 +116,14 @@ namespace RepairShop.Controllers
                     db.Customers.Attach(repairOrderVM.RepairOrder.Customer);
                     repairOrder.Customer = repairOrderVM.RepairOrder.Customer;
                 }
+
+                if (repairOrderVM.RepairOrder.Repairman.ID != repairOrder.Repairman.ID)
+                {
+                    db.Repairmen.Attach(repairOrderVM.RepairOrder.Repairman);
+                    repairOrder.Repairman = repairOrderVM.RepairOrder.Repairman;
+                }
+
+                repairOrder.RepairDescription = repairOrderVM.RepairOrder.RepairDescription;
 
                 db.Entry(repairOrder).State = EntityState.Modified;
                 db.SaveChanges();
@@ -126,6 +142,7 @@ namespace RepairShop.Controllers
             }
 
             RepairOrder repairOrder = db.RepairOrders.Include(x => x.Customer)
+                                                     .Include(x => x.Repairman)
                                                      .SingleOrDefault(x => x.ID == id);
             if (repairOrder == null)
             {
@@ -144,6 +161,70 @@ namespace RepairShop.Controllers
             db.RepairOrders.Remove(repairOrder);
             db.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+
+        // GET: RepairOrders/Parts/5
+        public ActionResult Parts(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Parts)
+                                                     .SingleOrDefault(x => x.ID == id);
+            if (repairOrder == null)
+            {
+                return HttpNotFound();
+            }
+
+            RepairOrderPartsViewModel repairOrderPartsVM = new RepairOrderPartsViewModel
+            {
+                Parts = db.Parts.ToList(),
+                RepairOrder = repairOrder,
+            };
+
+            return View(repairOrderPartsVM);
+        }
+
+        [HttpPost]
+        public ActionResult Parts(RepairOrderPartsViewModel repairOrderPartsVM, int id, int selectedID, bool add)
+        {
+            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Parts)
+                                         .SingleOrDefault(x => x.ID == id);
+            repairOrderPartsVM.RepairOrder = repairOrder;
+            repairOrderPartsVM.Parts = db.Parts.ToList();
+
+            if (add)
+            {
+                if (!repairOrderPartsVM.RepairOrder.Parts.Contains(db.Parts.Single(x => x.ID == selectedID)))
+                {
+                    repairOrderPartsVM.RepairOrder.Parts.Add(db.Parts.Single(x => x.ID == selectedID));
+                }
+                else
+                {
+                    repairOrderPartsVM.RepairOrder.Parts.Single(x => x.ID == selectedID).Count++;
+                }
+            }
+            else
+            {
+                if (repairOrderPartsVM.RepairOrder.Parts.Single(x => x.ID == selectedID).Count == 1)
+                {
+                    repairOrderPartsVM.RepairOrder.Parts.Remove(db.Parts.Single(x => x.ID == selectedID));
+                }
+                else
+                {
+                    repairOrderPartsVM.RepairOrder.Parts.Single(x => x.ID == selectedID).Count--;
+                }
+            }
+
+            repairOrder.Parts = repairOrderPartsVM.RepairOrder.Parts;
+
+            db.Entry(repairOrder).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return View(repairOrderPartsVM);
         }
 
         protected override void Dispose(bool disposing)

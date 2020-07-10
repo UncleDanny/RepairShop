@@ -1,0 +1,119 @@
+﻿@model RepairShop.View_Models.RepairOrderPartsViewModel
+
+<style>
+    .ui-selected {
+        background-color: #a6c9e2;
+    }
+</style>
+
+<table class="table" style="width: 40%; margin-right: 10%; float: left;" id="orderParts">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Parts[0].Brand)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Parts[0].Type)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Parts[0].Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Parts[0].Count)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.RepairOrder.Parts)
+        {
+            <tr>
+                @Html.HiddenFor(modelItem => item.ID)
+                <td>
+                    @Html.DisplayFor(modelItem => item.Brand)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Count)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<table class="table" style="width: 40%; margin-left: 10%; float: right" id="dbParts">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Parts[0].Brand)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Parts[0].Type)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Parts[0].Price)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model.Parts)
+        {
+            <tr>
+                @Html.HiddenFor(modelItem => item.ID)
+                <td>
+                    @Html.DisplayFor(modelItem => item.Brand)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+
+        $(function () {
+            $("#orderParts > tbody").selectable();
+            $("#dbParts > tbody").selectable();
+        });
+
+        $("#orderParts > tbody").on('selectableselected', function () {
+            var idValue = parseInt($("#orderParts > tbody .ui-selected").children()[0].value, 10);
+
+            $.ajax({
+                url: '@Url.Action("Parts", "RepairOrders", new { id = @Model.RepairOrder.ID })',
+                data: { 'id': @Model.RepairOrder.ID, 'selectedID': idValue, 'add': false },
+                type: "POST",
+                cache: false,
+                success: function () { location.reload() },
+            });
+        });
+
+        $("#dbParts > tbody").on('selectableselected', function () {
+            var idValue = parseInt($("#dbParts > tbody .ui-selected").children()[0].value, 10);
+
+            $.ajax({
+                url: '@Url.Action("Parts", "RepairOrders", new { id = @Model.RepairOrder.ID })',
+                data: { 'id': @Model.RepairOrder.ID, 'selectedID': idValue, 'add': true },
+                type: "POST",
+                cache: false,
+                success: function () { location.reload() },
+            });
+        });
+    </script>
+}

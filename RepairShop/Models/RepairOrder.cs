@@ -11,18 +11,26 @@ namespace RepairShop.Models
 
         public Customer Customer { get; set; }
 
-        public Reparateur Reparateur { get set; }
+        public Repairman Repairman { get; set; }
 
+        [Required]
+        [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        [DataType(DataType.Date), DisplayName("Start Date"), Required]
+        [DisplayName("Start Date")]
         public DateTime StartDate { get; set; }
 
+        [Required]
+        [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        [DataType(DataType.Date), DisplayName("End Date"), Required]
+        [DisplayName("End Date")]
         public DateTime EndDate { get; set; }
 
         public RepairOrderStatus Status { get; set; }
 
+        [DisplayName("Repair Description")]
+        public string RepairDescription { get; set; }
+
         public List<Part> Parts { get; set; }
+
     }
 }

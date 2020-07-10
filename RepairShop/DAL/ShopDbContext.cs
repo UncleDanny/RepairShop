@@ -15,6 +15,8 @@ namespace RepairShop.DAL
 
         public DbSet<Customer> Customers { get; set; }
 
+        public DbSet<Repairman> Repairmen { get; set; }
+
         public DbSet<Part> Parts { get; set; }
     }
 }
