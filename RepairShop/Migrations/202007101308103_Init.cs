@@ -8,26 +8,18 @@ namespace RepairShop.Migrations
         public override void Up()
         {
             CreateTable(
-                "dbo.Customers",
-                c => new
-                    {
-                        ID = c.Int(nullable: false, identity: true),
-                        FirstName = c.String(),
-                        LastName = c.String(),
-                    })
-                .PrimaryKey(t => t.ID);
-            
-            CreateTable(
-                "dbo.Parts",
+                "dbo.AvailableParts",
                 c => new
                     {
                         ID = c.Int(nullable: false, identity: true),
                         Brand = c.String(),
                         Type = c.String(),
                         Price = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        Count = c.Int(nullable: false),
+                        RepairOrder_ID = c.Int(),
                     })
-                .PrimaryKey(t => t.ID);
+                .PrimaryKey(t => t.ID)
+                .ForeignKey("dbo.RepairOrders", t => t.RepairOrder_ID)
+                .Index(t => t.RepairOrder_ID);
             
             CreateTable(
                 "dbo.RepairOrders",
@@ -48,6 +40,16 @@ namespace RepairShop.Migrations
                 .Index(t => t.Repairman_ID);
             
             CreateTable(
+                "dbo.Customers",
+                c => new
+                    {
+                        ID = c.Int(nullable: false, identity: true),
+                        FirstName = c.String(),
+                        LastName = c.String(),
+                    })
+                .PrimaryKey(t => t.ID);
+            
+            CreateTable(
                 "dbo.Repairmen",
                 c => new
                     {
@@ -59,35 +61,31 @@ namespace RepairShop.Migrations
                 .PrimaryKey(t => t.ID);
             
             CreateTable(
-                "dbo.RepairOrderParts",
+                "dbo.Parts",
                 c => new
                     {
-                        RepairOrder_ID = c.Int(nullable: false),
-                        Part_ID = c.Int(nullable: false),
+                        ID = c.Int(nullable: false, identity: true),
+                        Brand = c.String(),
+                        Type = c.String(),
+                        Price = c.Decimal(nullable: false, precision: 18, scale: 2),
                     })
-                .PrimaryKey(t => new { t.RepairOrder_ID, t.Part_ID })
-                .ForeignKey("dbo.RepairOrders", t => t.RepairOrder_ID, cascadeDelete: true)
-                .ForeignKey("dbo.Parts", t => t.Part_ID, cascadeDelete: true)
-                .Index(t => t.RepairOrder_ID)
-                .Index(t => t.Part_ID);
+                .PrimaryKey(t => t.ID);
             
         }
         
         public override void Down()
         {
             DropForeignKey("dbo.RepairOrders", "Repairman_ID", "dbo.Repairmen");
-            DropForeignKey("dbo.RepairOrderParts", "Part_ID", "dbo.Parts");
-            DropForeignKey("dbo.RepairOrderParts", "RepairOrder_ID", "dbo.RepairOrders");
+            DropForeignKey("dbo.AvailableParts", "RepairOrder_ID", "dbo.RepairOrders");
             DropForeignKey("dbo.RepairOrders", "Customer_ID", "dbo.Customers");
-            DropIndex("dbo.RepairOrderParts", new[] { "Part_ID" });
-            DropIndex("dbo.RepairOrderParts", new[] { "RepairOrder_ID" });
             DropIndex("dbo.RepairOrders", new[] { "Repairman_ID" });
             DropIndex("dbo.RepairOrders", new[] { "Customer_ID" });
-            DropTable("dbo.RepairOrderParts");
-            DropTable("dbo.Repairmen");
-            DropTable("dbo.RepairOrders");
+            DropIndex("dbo.AvailableParts", new[] { "RepairOrder_ID" });
             DropTable("dbo.Parts");
+            DropTable("dbo.Repairmen");
             DropTable("dbo.Customers");
+            DropTable("dbo.RepairOrders");
+            DropTable("dbo.AvailableParts");
         }
     }
 }

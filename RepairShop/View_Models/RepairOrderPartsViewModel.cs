@@ -7,10 +7,6 @@ namespace RepairShop.View_Models
     {
         public RepairOrder RepairOrder { get; set; }
 
-        public List<Part> Parts { get; set; }
-
-        public int[] OrderParts { get; set; }
-
-        public int[] DbParts { get; set; }
+        public List<AvailablePart> AvailableParts { get; set; }
     }
 }

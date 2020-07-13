@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RepairShop.View_Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -30,7 +31,6 @@ namespace RepairShop.Models
         [DisplayName("Repair Description")]
         public string RepairDescription { get; set; }
 
-        public List<Part> Parts { get; set; }
-
+        public List<AvailablePart> Parts { get; set; }
     }
 }

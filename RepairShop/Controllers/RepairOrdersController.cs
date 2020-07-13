@@ -1,10 +1,13 @@
-﻿using RepairShop.DAL;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RepairShop.DAL;
 using RepairShop.Models;
 using RepairShop.View_Models;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Web.Helpers;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
@@ -48,6 +51,7 @@ namespace RepairShop.Controllers
                 Customers = db.Customers.ToList(),
                 Repairmen = db.Repairmen.ToList(),
             };
+
             return View(model);
         }
 
@@ -124,6 +128,9 @@ namespace RepairShop.Controllers
                 }
 
                 repairOrder.RepairDescription = repairOrderVM.RepairOrder.RepairDescription;
+                repairOrder.Status = repairOrderVM.RepairOrder.Status;
+                repairOrder.StartDate = repairOrderVM.RepairOrder.StartDate;
+                repairOrder.EndDate = repairOrderVM.RepairOrder.EndDate;
 
                 db.Entry(repairOrder).State = EntityState.Modified;
                 db.SaveChanges();
@@ -163,7 +170,6 @@ namespace RepairShop.Controllers
             return RedirectToAction("Index");
         }
 
-
         // GET: RepairOrders/Parts/5
         public ActionResult Parts(int? id)
         {
@@ -181,50 +187,51 @@ namespace RepairShop.Controllers
 
             RepairOrderPartsViewModel repairOrderPartsVM = new RepairOrderPartsViewModel
             {
-                Parts = db.Parts.ToList(),
                 RepairOrder = repairOrder,
             };
 
             return View(repairOrderPartsVM);
         }
 
-        [HttpPost]
-        public ActionResult Parts(RepairOrderPartsViewModel repairOrderPartsVM, int id, int selectedID, bool add)
+        [HttpGet]
+        public JsonResult DbParts()
         {
-            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Parts)
-                                         .SingleOrDefault(x => x.ID == id);
-            repairOrderPartsVM.RepairOrder = repairOrder;
-            repairOrderPartsVM.Parts = db.Parts.ToList();
+            List<AvailablePart> parts = db.AvailableParts.Where(x => x.RepairOrder == null).ToList();
+            return Json(parts, JsonRequestBehavior.AllowGet);
+        }
 
-            if (add)
+        [HttpGet]
+        public JsonResult OrderParts(int id)
+        {
+            List<AvailablePart> parts = db.AvailableParts.Include(x => x.RepairOrder).Where(y => y.RepairOrder.ID == id).ToList();
+
+            return Json(parts, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult Parts(List<AvailablePart> parts, int id)
+        {
+            if (parts is null)
             {
-                if (!repairOrderPartsVM.RepairOrder.Parts.Contains(db.Parts.Single(x => x.ID == selectedID)))
-                {
-                    repairOrderPartsVM.RepairOrder.Parts.Add(db.Parts.Single(x => x.ID == selectedID));
-                }
-                else
-                {
-                    repairOrderPartsVM.RepairOrder.Parts.Single(x => x.ID == selectedID).Count++;
-                }
-            }
-            else
-            {
-                if (repairOrderPartsVM.RepairOrder.Parts.Single(x => x.ID == selectedID).Count == 1)
-                {
-                    repairOrderPartsVM.RepairOrder.Parts.Remove(db.Parts.Single(x => x.ID == selectedID));
-                }
-                else
-                {
-                    repairOrderPartsVM.RepairOrder.Parts.Single(x => x.ID == selectedID).Count--;
-                }
+                parts = new List<AvailablePart>();
             }
 
-            repairOrder.Parts = repairOrderPartsVM.RepairOrder.Parts;
+            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Parts).SingleOrDefault(x => x.ID == id);
+            foreach (AvailablePart part in parts)
+            {
+                AvailablePart dbPart = db.AvailableParts.Include(x => x.RepairOrder).SingleOrDefault(x => x.ID == part.ID);
+                dbPart.RepairOrder = repairOrder;
+            }
 
-            db.Entry(repairOrder).State = EntityState.Modified;
-            db.SaveChanges();
+            foreach (AvailablePart part in repairOrder.Parts.ToList())
+            {
+                if (!(parts.FindIndex(x => x.ID == part.ID) >= 0))
+                {
+                    repairOrder.Parts.Remove(part);
+                }
+            }
 
-            return View(repairOrderPartsVM);
+            return Json(db.SaveChanges());
         }
 
         protected override void Dispose(bool disposing)

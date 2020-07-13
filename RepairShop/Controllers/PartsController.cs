@@ -116,6 +116,21 @@ namespace RepairShop.Controllers
             return RedirectToAction("Index");
         }
 
+        public ActionResult AddAvailablePart(int id)
+        {
+            Part part = db.Parts.Find(id);
+            AvailablePart availablePart = new AvailablePart()
+            {                
+                Brand = part.Brand,
+                Price = part.Price,
+                Type = part.Type,
+            };
+
+            db.AvailableParts.Add(availablePart);
+            db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)

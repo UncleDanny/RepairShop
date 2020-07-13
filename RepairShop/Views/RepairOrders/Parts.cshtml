@@ -1,119 +1,125 @@
 ﻿@model RepairShop.View_Models.RepairOrderPartsViewModel
 
 <style>
-    .ui-selected {
+    tbody tr:hover {
         background-color: #a6c9e2;
     }
 </style>
 
-<table class="table" style="width: 40%; margin-right: 10%; float: left;" id="orderParts">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Parts[0].Brand)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Parts[0].Type)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Parts[0].Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Parts[0].Count)
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.RepairOrder.Parts)
-        {
-            <tr>
-                @Html.HiddenFor(modelItem => item.ID)
-                <td>
-                    @Html.DisplayFor(modelItem => item.Brand)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Type)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Price)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Count)
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div style="display:grid; grid-template-columns: repeat(3, 1fr)">
+    <div>
+        <table class="table" id="orderParts">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.AvailableParts[0].Brand)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.AvailableParts[0].Type)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.AvailableParts[0].Price)
+                    </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-<table class="table" style="width: 40%; margin-left: 10%; float: right" id="dbParts">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Parts[0].Brand)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Parts[0].Type)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Parts[0].Price)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
+    <div style="margin: auto; text-align:center">
+        <input type="submit" value="Save changes" onclick="saveChanges()" />
+    </div>
 
-    <tbody>
-        @foreach (var item in Model.Parts)
-        {
-            <tr>
-                @Html.HiddenFor(modelItem => item.ID)
-                <td>
-                    @Html.DisplayFor(modelItem => item.Brand)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Type)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Price)
-                </td>
-                <td>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <div>
+        <table class="table" id="dbParts">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.AvailableParts[0].Brand)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.AvailableParts[0].Type)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.AvailableParts[0].Price)
+                    </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script>
 
-        $(function () {
-            $("#orderParts > tbody").selectable();
-            $("#dbParts > tbody").selectable();
+        function fillTable(tableId) {
+            return function (json) {
+                var tr;
+                for (var i = 0; i < json.length; i++) {
+                    tr = $('<tr/>');
+                    tr.append("<input id='item_ID' name='item.ID' type='hidden' value='" + json[i].ID + "' />")
+                    tr.append("<td>" + json[i].Brand + "</td>");
+                    tr.append("<td>" + json[i].Type + "</td>");
+                    tr.append("<td>" + json[i].Price + "</td>");
+                    $(tableId).append(tr);
+                }
+            }
+        }
+
+        $(document).ready(function () {
+            $.getJSON("/RepairOrders/DbParts", fillTable('#dbParts'));
+            $.getJSON("/RepairOrders/OrderParts", { id: @Model.RepairOrder.ID, }, fillTable('#orderParts'));
         });
 
-        $("#orderParts > tbody").on('selectableselected', function () {
-            var idValue = parseInt($("#orderParts > tbody .ui-selected").children()[0].value, 10);
+        function switchToTable(tableName) {
+            return function () {
+                var cells = $(this).children();
+                var tr = $('<tr/>');
+                tr.append("<input id='item_ID' name='item.ID' type='hidden' value='" + cells[0].value + "' />")
+                for (var i = 1; i < cells.length; i++) {
+                    tr.append("<td>" + cells[i].textContent + "</td>");
+                }
+
+                $(tableName).append(tr);
+                $(this).remove();
+            }
+        }
+
+        $("#dbParts").on('click', 'tr:has(td)', switchToTable('#orderParts'));
+        $("#orderParts").on('click', 'tr:has(td)', switchToTable('#dbParts'));
+
+        function saveChanges() {
+            var tableRows = document.querySelectorAll('#orderParts > tbody > tr');
+            var array = [];
+            for (var i = 0; i < tableRows.length; i++) {
+                var cells = tableRows[i].children;
+                var availablePart = {};
+                availablePart.ID = cells[0].value;
+                availablePart.Brand = cells[1].textContent;
+                availablePart.Type = cells[2].textContent;
+                availablePart.Price = cells[3].textContent;
+                array.push(availablePart);
+            }
+
+            var data = JSON.stringify({
+                "parts": array,
+                "id": @Model.RepairOrder.ID,
+            })
 
             $.ajax({
-                url: '@Url.Action("Parts", "RepairOrders", new { id = @Model.RepairOrder.ID })',
-                data: { 'id': @Model.RepairOrder.ID, 'selectedID': idValue, 'add': false },
                 type: "POST",
-                cache: false,
-                success: function () { location.reload() },
-            });
-        });
+                url: '/RepairOrders/Parts',
+                data: data,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                error: function (error) {
+                    alert("error:" + error.responseText);
+                },
+            })
+        }
 
-        $("#dbParts > tbody").on('selectableselected', function () {
-            var idValue = parseInt($("#dbParts > tbody .ui-selected").children()[0].value, 10);
-
-            $.ajax({
-                url: '@Url.Action("Parts", "RepairOrders", new { id = @Model.RepairOrder.ID })',
-                data: { 'id': @Model.RepairOrder.ID, 'selectedID': idValue, 'add': true },
-                type: "POST",
-                cache: false,
-                success: function () { location.reload() },
-            });
-        });
     </script>
 }
