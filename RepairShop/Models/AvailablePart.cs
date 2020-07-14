@@ -12,7 +12,7 @@ namespace RepairShop.Models
         public string Type { get; set; }
 
         [DataType(DataType.Currency)]
-        [DisplayFormat(DataFormatString = "{0:N}", ApplyFormatInEditMode = true)]
+        [DisplayFormat(DataFormatString = "{0:C}", ApplyFormatInEditMode = true)]
         public decimal Price { get; set; }
 
         [ScriptIgnore]

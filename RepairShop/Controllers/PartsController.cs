@@ -83,6 +83,15 @@ namespace RepairShop.Controllers
         {
             if (ModelState.IsValid)
             {
+                List<AvailablePart> parts = db.AvailableParts.Where(x => x.Type == part.Type && x.Brand == part.Brand).ToList();
+                foreach (AvailablePart availablePart in parts)
+                {
+                    availablePart.Brand = part.Brand;
+                    availablePart.Type = part.Type;
+                    availablePart.Price = part.Price;
+                    db.Entry(availablePart).State = EntityState.Modified;
+                }
+
                 db.Entry(part).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
