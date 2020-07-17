@@ -12,8 +12,8 @@ namespace RepairShop.Migrations
                 c => new
                     {
                         ID = c.Int(nullable: false, identity: true),
-                        Brand = c.String(),
-                        Type = c.String(),
+                        Brand = c.String(nullable: false),
+                        Type = c.String(nullable: false),
                         Price = c.Decimal(nullable: false, precision: 18, scale: 2),
                         RepairOrder_ID = c.Int(),
                     })
@@ -44,8 +44,8 @@ namespace RepairShop.Migrations
                 c => new
                     {
                         ID = c.Int(nullable: false, identity: true),
-                        FirstName = c.String(),
-                        LastName = c.String(),
+                        FirstName = c.String(nullable: false),
+                        LastName = c.String(nullable: false),
                     })
                 .PrimaryKey(t => t.ID);
             
@@ -55,8 +55,8 @@ namespace RepairShop.Migrations
                     {
                         ID = c.Int(nullable: false, identity: true),
                         Wage = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        FirstName = c.String(),
-                        LastName = c.String(),
+                        FirstName = c.String(nullable: false),
+                        LastName = c.String(nullable: false),
                     })
                 .PrimaryKey(t => t.ID);
             
@@ -65,8 +65,8 @@ namespace RepairShop.Migrations
                 c => new
                     {
                         ID = c.Int(nullable: false, identity: true),
-                        Brand = c.String(),
-                        Type = c.String(),
+                        Brand = c.String(nullable: false),
+                        Type = c.String(nullable: false),
                         Price = c.Decimal(nullable: false, precision: 18, scale: 2),
                     })
                 .PrimaryKey(t => t.ID);

@@ -23,7 +23,7 @@
         @foreach (RepairOrderStatus item in Enum.GetValues(typeof(RepairOrderStatus)))
         {
             <td style="width:25%">
-                @Html.Label(Model.Count(i => i.Status == item).ToString())
+                @Model.Count(i => i.Status == item).ToString()
             </td>
         }
     </tr>

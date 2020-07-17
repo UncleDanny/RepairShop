@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace RepairShop.Models
+﻿namespace RepairShop.Models
 {
     public class Customer : Person
     {

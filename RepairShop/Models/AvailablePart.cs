@@ -7,13 +7,18 @@ namespace RepairShop.Models
     {
         public int ID { get; set; }
 
+        [Required]
         public string Brand { get; set; }
 
+        [Required]
         public string Type { get; set; }
 
+        [Required]
         [DataType(DataType.Currency)]
-        [DisplayFormat(DataFormatString = "{0:C}", ApplyFormatInEditMode = true)]
+        [DisplayFormat(DataFormatString = "{0:C}")]
         public decimal Price { get; set; }
+
+        public bool isActive { get; set; } = true;
 
         [ScriptIgnore]
         public RepairOrder RepairOrder { get; set; }

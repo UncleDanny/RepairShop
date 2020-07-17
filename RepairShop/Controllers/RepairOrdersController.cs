@@ -1,13 +1,11 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RepairShop.DAL;
+﻿using RepairShop.DAL;
 using RepairShop.Models;
 using RepairShop.View_Models;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
-using System.Web.Helpers;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
@@ -18,23 +16,25 @@ namespace RepairShop.Controllers
         private readonly ShopDbContext db = new ShopDbContext();
 
         // GET: RepairOrders
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            return View(db.RepairOrders.Include(x => x.Customer).Include(x => x.Repairman).ToList());
+            return View(await db.RepairOrders.Include(x => x.Customer)
+                                             .Include(x => x.Repairman)
+                                             .ToListAsync());
         }
 
         // GET: RepairOrders/Details/5
-        public ActionResult Details(int? id)
+        public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Customer)
-                                                     .Include(x => x.Repairman)
-                                                     .Include(x => x.Parts)
-                                                     .SingleOrDefault(x => x.ID == id);
+            RepairOrder repairOrder = await db.RepairOrders.Include(x => x.Customer)
+                                                           .Include(x => x.Repairman)
+                                                           .Include(x => x.Parts)
+                                                           .SingleOrDefaultAsync(x => x.ID == id);
             if (repairOrder == null)
             {
                 return HttpNotFound();
@@ -44,12 +44,12 @@ namespace RepairShop.Controllers
         }
 
         // GET: RepairOrders/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
             RepairOrdersViewModel model = new RepairOrdersViewModel
             {
-                Customers = db.Customers.ToList(),
-                Repairmen = db.Repairmen.ToList(),
+                Customers = await db.Customers.ToListAsync(),
+                Repairmen = await db.Repairmen.ToListAsync(),
             };
 
             return View(model);
@@ -60,14 +60,16 @@ namespace RepairShop.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(RepairOrdersViewModel repairOrderVM)
+        public async Task<ActionResult> Create(RepairOrdersViewModel repairOrderVM)
         {
+            repairOrderVM.Customers = await db.Customers.ToListAsync();
+            repairOrderVM.Repairmen = await db.Repairmen.ToListAsync();
             if (ModelState.IsValid)
             {
-                repairOrderVM.RepairOrder.Customer = db.Customers.Find(repairOrderVM.RepairOrder.Customer.ID);
-                repairOrderVM.RepairOrder.Repairman = db.Repairmen.Find(repairOrderVM.RepairOrder.Repairman.ID);
+                repairOrderVM.RepairOrder.Customer = await db.Customers.FindAsync(repairOrderVM.RepairOrder.Customer.ID);
+                repairOrderVM.RepairOrder.Repairman = await db.Repairmen.FindAsync(repairOrderVM.RepairOrder.Repairman.ID);
                 db.RepairOrders.Add(repairOrderVM.RepairOrder);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
 
@@ -75,16 +77,16 @@ namespace RepairShop.Controllers
         }
 
         // GET: RepairOrders/Edit/5
-        public ActionResult Edit(int? id)
+        public async Task<ActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Customer)
-                                                     .Include(x => x.Repairman)
-                                                     .SingleOrDefault(x => x.ID == id);
+            RepairOrder repairOrder = await db.RepairOrders.Include(x => x.Customer)
+                                                           .Include(x => x.Repairman)
+                                                           .SingleOrDefaultAsync(x => x.ID == id);
             if (repairOrder == null)
             {
                 return HttpNotFound();
@@ -92,28 +94,26 @@ namespace RepairShop.Controllers
 
             RepairOrdersViewModel repairOrderVM = new RepairOrdersViewModel
             {
-                Customers = db.Customers.ToList(),
-                Repairmen = db.Repairmen.ToList(),
+                Customers = await db.Customers.ToListAsync(),
+                Repairmen = await db.Repairmen.ToListAsync(),
                 RepairOrder = repairOrder,
             };
 
             return View(repairOrderVM);
         }
 
-        //[Bind(Include = "ID,StartDate,EndDate,Status")]
-
         // POST: RepairOrders/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(RepairOrdersViewModel repairOrderVM)
+        public async Task<ActionResult> Edit(RepairOrdersViewModel repairOrderVM)
         {
             if (ModelState.IsValid)
             {
-                RepairOrder repairOrder = db.RepairOrders.Include(p => p.Customer)
-                                                         .Include(p => p.Repairman)
-                                                         .Single(p => p.ID == repairOrderVM.RepairOrder.ID);
+                RepairOrder repairOrder = await db.RepairOrders.Include(p => p.Customer)
+                                                               .Include(p => p.Repairman)
+                                                               .SingleOrDefaultAsync(p => p.ID == repairOrderVM.RepairOrder.ID);
 
                 if (repairOrderVM.RepairOrder.Customer.ID != repairOrder.Customer.ID)
                 {
@@ -133,7 +133,7 @@ namespace RepairShop.Controllers
                 repairOrder.EndDate = repairOrderVM.RepairOrder.EndDate;
 
                 db.Entry(repairOrder).State = EntityState.Modified;
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
 
@@ -141,16 +141,16 @@ namespace RepairShop.Controllers
         }
 
         // GET: RepairOrders/Delete/5
-        public ActionResult Delete(int? id)
+        public async Task<ActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Customer)
-                                                     .Include(x => x.Repairman)
-                                                     .SingleOrDefault(x => x.ID == id);
+            RepairOrder repairOrder = await db.RepairOrders.Include(x => x.Customer)
+                                                           .Include(x => x.Repairman)
+                                                           .SingleOrDefaultAsync(x => x.ID == id);
             if (repairOrder == null)
             {
                 return HttpNotFound();
@@ -162,24 +162,32 @@ namespace RepairShop.Controllers
         // POST: RepairOrders/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            RepairOrder repairOrder = db.RepairOrders.Find(id);
+            List<AvailablePart> parts = await db.AvailableParts.Include(x => x.RepairOrder)
+                                                               .Where(x => x.RepairOrder.ID == id)
+                                                               .ToListAsync();
+            foreach (AvailablePart part in parts)
+            {
+                part.RepairOrder = null;
+            }
+
+            RepairOrder repairOrder = await db.RepairOrders.FindAsync(id);
             db.RepairOrders.Remove(repairOrder);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
         // GET: RepairOrders/Parts/5
-        public ActionResult Parts(int? id)
+        public async Task<ActionResult> Parts(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Parts)
-                                                     .SingleOrDefault(x => x.ID == id);
+            RepairOrder repairOrder = await db.RepairOrders.Include(x => x.Parts)
+                                                           .SingleOrDefaultAsync(x => x.ID == id);
             if (repairOrder == null)
             {
                 return HttpNotFound();
@@ -194,32 +202,36 @@ namespace RepairShop.Controllers
         }
 
         [HttpGet]
-        public JsonResult DbParts()
+        public async Task<JsonResult> DbParts()
         {
-            List<AvailablePart> parts = db.AvailableParts.Where(x => x.RepairOrder == null).ToList();
+            List<AvailablePart> parts = await db.AvailableParts.Where(x => x.RepairOrder == null)
+                                                               .ToListAsync();
             return Json(parts, JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
-        public JsonResult OrderParts(int id)
+        public async Task<JsonResult> OrderParts(int id)
         {
-            List<AvailablePart> parts = db.AvailableParts.Include(x => x.RepairOrder).Where(y => y.RepairOrder.ID == id).ToList();
-
+            List<AvailablePart> parts = await db.AvailableParts.Include(x => x.RepairOrder)
+                                                               .Where(y => y.RepairOrder.ID == id)
+                                                               .ToListAsync();
             return Json(parts, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
-        public JsonResult Parts(List<AvailablePart> parts, int id)
+        public async Task<JsonResult> Parts(List<AvailablePart> parts, int id)
         {
             if (parts is null)
             {
                 parts = new List<AvailablePart>();
             }
 
-            RepairOrder repairOrder = db.RepairOrders.Include(x => x.Parts).SingleOrDefault(x => x.ID == id);
+            RepairOrder repairOrder = await db.RepairOrders.Include(x => x.Parts)
+                                                           .SingleOrDefaultAsync(x => x.ID == id);
             foreach (AvailablePart part in parts)
             {
-                AvailablePart dbPart = db.AvailableParts.Include(x => x.RepairOrder).SingleOrDefault(x => x.ID == part.ID);
+                AvailablePart dbPart = await db.AvailableParts.Include(x => x.RepairOrder)
+                                                              .SingleOrDefaultAsync(x => x.ID == part.ID);
                 dbPart.RepairOrder = repairOrder;
             }
 
@@ -231,7 +243,7 @@ namespace RepairShop.Controllers
                 }
             }
 
-            return Json(db.SaveChanges());
+            return Json(await db.SaveChangesAsync());
         }
 
         protected override void Dispose(bool disposing)

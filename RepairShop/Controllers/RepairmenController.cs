@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
-using System.Net;
-using System.Web;
-using System.Web.Mvc;
-using RepairShop.DAL;
+﻿using RepairShop.DAL;
 using RepairShop.Models;
+using System.Data.Entity;
+using System.Net;
+using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace RepairShop.Controllers
 {
@@ -16,23 +12,25 @@ namespace RepairShop.Controllers
         private ShopDbContext db = new ShopDbContext();
 
         // GET: Repairmen
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            return View(db.Repairmen.ToList());
+            return View(await db.Repairmen.ToListAsync());
         }
 
         // GET: Repairmen/Details/5
-        public ActionResult Details(int? id)
+        public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Repairman repairman = db.Repairmen.Find(id);
+
+            Repairman repairman = await db.Repairmen.FindAsync(id);
             if (repairman == null)
             {
                 return HttpNotFound();
             }
+
             return View(repairman);
         }
 
@@ -47,12 +45,12 @@ namespace RepairShop.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ID,Wage,FirstName,LastName")] Repairman repairman)
+        public async Task<ActionResult> Create([Bind(Include = "ID,Wage,FirstName,LastName")] Repairman repairman)
         {
             if (ModelState.IsValid)
             {
                 db.Repairmen.Add(repairman);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
 
@@ -60,17 +58,19 @@ namespace RepairShop.Controllers
         }
 
         // GET: Repairmen/Edit/5
-        public ActionResult Edit(int? id)
+        public async Task<ActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Repairman repairman = db.Repairmen.Find(id);
+
+            Repairman repairman = await db.Repairmen.FindAsync(id);
             if (repairman == null)
             {
                 return HttpNotFound();
             }
+
             return View(repairman);
         }
 
@@ -79,40 +79,43 @@ namespace RepairShop.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ID,Wage,FirstName,LastName")] Repairman repairman)
+        public async Task<ActionResult> Edit([Bind(Include = "ID,Wage,FirstName,LastName")] Repairman repairman)
         {
             if (ModelState.IsValid)
             {
                 db.Entry(repairman).State = EntityState.Modified;
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
+
             return View(repairman);
         }
 
         // GET: Repairmen/Delete/5
-        public ActionResult Delete(int? id)
+        public async Task<ActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Repairman repairman = db.Repairmen.Find(id);
+
+            Repairman repairman = await db.Repairmen.FindAsync(id);
             if (repairman == null)
             {
                 return HttpNotFound();
             }
+
             return View(repairman);
         }
 
         // POST: Repairmen/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            Repairman repairman = db.Repairmen.Find(id);
+            Repairman repairman = await db.Repairmen.FindAsync(id);
             db.Repairmen.Remove(repairman);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
@@ -122,6 +125,7 @@ namespace RepairShop.Controllers
             {
                 db.Dispose();
             }
+
             base.Dispose(disposing);
         }
     }

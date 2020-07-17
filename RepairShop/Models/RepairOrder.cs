@@ -1,5 +1,4 @@
-﻿using RepairShop.View_Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -26,6 +25,7 @@ namespace RepairShop.Models
         [DisplayName("End Date")]
         public DateTime EndDate { get; set; }
 
+        [Required]
         public RepairOrderStatus Status { get; set; }
 
         [DisplayName("Repair Description")]

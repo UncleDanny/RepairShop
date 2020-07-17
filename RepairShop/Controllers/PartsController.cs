@@ -4,10 +4,12 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using RepairShop.DAL;
 using RepairShop.Models;
+using RepairShop.View_Models;
 
 namespace RepairShop.Controllers
 {
@@ -16,23 +18,31 @@ namespace RepairShop.Controllers
         private ShopDbContext db = new ShopDbContext();
 
         // GET: Parts
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            return View(db.Parts.ToList());
+            PartsViewModel partsVM = new PartsViewModel
+            {
+                Parts = await db.Parts.ToListAsync(),
+                AvailableParts = await db.AvailableParts.ToListAsync(),
+            };
+
+            return View(partsVM);
         }
 
         // GET: Parts/Details/5
-        public ActionResult Details(int? id)
+        public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Part part = db.Parts.Find(id);
+
+            Part part = await db.Parts.FindAsync(id);
             if (part == null)
             {
                 return HttpNotFound();
             }
+
             return View(part);
         }
 
@@ -47,12 +57,20 @@ namespace RepairShop.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ID,Brand,Type,Price")] Part part)
+        public async Task<ActionResult> Create([Bind(Include = "ID,Brand,Type,Price")] Part part)
         {
             if (ModelState.IsValid)
             {
+                List<AvailablePart> availableParts = await db.AvailableParts.Where(x => x.Brand == part.Brand && x.Type == part.Type)
+                                                                            .ToListAsync();
+                foreach (AvailablePart availablePart in availableParts)
+                {
+                    availablePart.isActive = true;
+                    availablePart.Price = part.Price;
+                }
+
                 db.Parts.Add(part);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
 
@@ -60,17 +78,19 @@ namespace RepairShop.Controllers
         }
 
         // GET: Parts/Edit/5
-        public ActionResult Edit(int? id)
+        public async Task<ActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Part part = db.Parts.Find(id);
+
+            Part part = await db.Parts.FindAsync(id);
             if (part == null)
             {
                 return HttpNotFound();
             }
+
             return View(part);
         }
 
@@ -79,11 +99,12 @@ namespace RepairShop.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ID,Brand,Type,Price")] Part part)
+        public async Task<ActionResult> Edit([Bind(Include = "ID,Brand,Type,Price")] Part part)
         {
             if (ModelState.IsValid)
             {
-                List<AvailablePart> parts = db.AvailableParts.Where(x => x.Type == part.Type && x.Brand == part.Brand).ToList();
+                List<AvailablePart> parts = await db.AvailableParts.Where(x => x.Type == part.Type && x.Brand == part.Brand)
+                                                                   .ToListAsync();
                 foreach (AvailablePart availablePart in parts)
                 {
                     availablePart.Brand = part.Brand;
@@ -93,41 +114,51 @@ namespace RepairShop.Controllers
                 }
 
                 db.Entry(part).State = EntityState.Modified;
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
+
             return View(part);
         }
 
         // GET: Parts/Delete/5
-        public ActionResult Delete(int? id)
+        public async Task<ActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Part part = db.Parts.Find(id);
+
+            Part part = await db.Parts.FindAsync(id);
             if (part == null)
             {
                 return HttpNotFound();
             }
+
             return View(part);
         }
 
         // POST: Parts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            Part part = db.Parts.Find(id);
+            Part part = await db.Parts.FindAsync(id);
+            List<AvailablePart> availableParts = await db.AvailableParts.Where(x => x.Brand == part.Brand && x.Type == part.Type)
+                                                                        .ToListAsync();
+            foreach (AvailablePart availablePart in availableParts)
+            {
+                availablePart.isActive = false;
+            }
+
             db.Parts.Remove(part);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
-        public ActionResult AddAvailablePart(int id)
+        public async Task<ActionResult> AddAvailablePart(int id)
         {
-            Part part = db.Parts.Find(id);
+            Part part = await db.Parts.FindAsync(id);
             AvailablePart availablePart = new AvailablePart()
             {                
                 Brand = part.Brand,
@@ -136,7 +167,7 @@ namespace RepairShop.Controllers
             };
 
             db.AvailableParts.Add(availablePart);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
@@ -146,6 +177,7 @@ namespace RepairShop.Controllers
             {
                 db.Dispose();
             }
+
             base.Dispose(disposing);
         }
     }

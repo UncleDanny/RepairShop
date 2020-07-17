@@ -1,38 +1,10 @@
 ﻿@model RepairShop.View_Models.RepairOrderPartsViewModel
-
-<style>
-    tbody tr:hover {
-        background-color: #a6c9e2;
-    }
-
-    tbody {
-        display: block;
-        max-height: 370px;
-        overflow-y: auto;
-        scrollbar-width: thin;
-    }
-
-    th, tr {
-        text-align: center;
-        user-select: none;
-    }
-
-    thead, tbody tr {
-        display: table;
-        width: 100%;
-        table-layout: fixed;
-    }
-
-    #mainContainer {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-</style>
+@Styles.Render("~/Content/Parts.css")
 
 <div id="mainContainer">
     <div>
         <table class="table" id="orderParts">
+            <caption style="text-align:center">Parts reserved for order</caption>
             <thead>
                 <tr>
                     <th>
@@ -43,6 +15,9 @@
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.AvailableParts[0].Price)
+                    </th>
+                    <th>
+                        Quantity
                     </th>
                 </tr>
             </thead>
@@ -51,12 +26,15 @@
     </div>
 
     <div style="margin: 10px 0 0 0; text-align:center">
-        <input class="btn btn-success" style="width:150px" type="submit" value="Save changes" onclick="saveChanges()" />
-        <input class="btn btn-danger" style="width:150px"  type="submit" value="Reset" onclick="location.reload()" />
+        <input id="saveChanges" class="btn btn-success" style="width:150px" type="submit" value="Save changes" onclick="saveChanges()" />
+        <input class="btn btn-danger" style="width:150px" type="submit" value="Reset" onclick="location.reload()" />
+
+        <p id="saved" hidden>Saved</p>
     </div>
 
     <div>
         <table class="table" id="dbParts">
+            <caption style="text-align:center">Available parts</caption>
             <thead>
                 <tr>
                     <th>
@@ -67,6 +45,9 @@
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.AvailableParts[0].Price)
+                    </th>
+                    <th>
+                        Quantity
                     </th>
                 </tr>
             </thead>
@@ -76,57 +57,104 @@
 </div>
 
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script>
+        $(document).ready(function () {
+            $.getJSON("/RepairOrders/OrderParts", { id: @Model.RepairOrder.ID, }, fillTable('#orderParts'));
+            $.getJSON("/RepairOrders/DbParts", fillTable('#dbParts'));
+        });
+
+        $("#dbParts").on('click', 'tr:has(td)', handleRow('#orderParts'));
+        $("#orderParts").on('click', 'tr:has(td)', handleRow('#dbParts'));
 
         function fillTable(tableId) {
             return function (json) {
-                var tr;
+                var uniqueItems = {};
                 for (var i = 0; i < json.length; i++) {
+                    var part = json[i];
+                    var item = part.Brand + part.Type;
+                    if (item in uniqueItems) {
+                        uniqueItems[item].push(part);
+                    }
+                    else {
+                        uniqueItems[item] = new Array(part);
+                    }
+                }
+
+                var tr;
+                var uniqueKeys = Object.keys(uniqueItems); // ["Koekjevan eigen deeg", "Koekjevoor de honger"]
+                for (var i = 0; i < uniqueKeys.length; i++) {
+                    var idArray = [];
+                    var parts = uniqueItems[uniqueKeys[i]];
+                    for (var j = 0; j < parts.length; j++) {
+                        idArray.push(parts[j].ID);
+                    }
+
                     tr = $('<tr/>');
-                    tr.append("<input id='item_ID' name='item.ID' type='hidden' value='" + json[i].ID + "' />")
-                    tr.append("<td>"+ json[i].Brand + "</td>");
-                    tr.append("<td>" + json[i].Type + "</td>");
-                    tr.append("<td>&euro;" + json[i].Price + "</td>");
+                    tr.append("<input id='item_ID' name='item.ID' type='hidden' value='" + idArray.join(",") + "' />")
+                    tr.append("<td>" + parts[0].Brand + "</td>");
+                    tr.append("<td>" + parts[0].Type + "</td>");
+                    tr.append("<td>&euro;" + parts[0].Price + "</td>");
+                    tr.append("<td>" + parts.length + "</td>");
                     $(tableId).append(tr);
                 }
             }
         }
 
-        $(document).ready(function () {
-            $.getJSON("/RepairOrders/DbParts", fillTable('#dbParts'));
-            $.getJSON("/RepairOrders/OrderParts", { id: @Model.RepairOrder.ID, }, fillTable('#orderParts'));
-        });
 
-        function switchToTable(tableName) {
+
+        function handleRow(targetTable) {
             return function () {
                 var cells = $(this).children();
-                var tr = $('<tr/>');
-                tr.append("<input id='item_ID' name='item.ID' type='hidden' value='" + cells[0].value + "' />")
-                for (var i = 1; i < cells.length; i++) {
-                    tr.append("<td>" + cells[i].textContent + "</td>");
+                var ids = cells[0].value.split(",");
+                var targetRow = $(targetTable + " tr:contains(" + cells[1].textContent + "):contains(" + cells[2].textContent + ")");
+
+                if (targetRow.length == 0) {
+                    moveRowToTable(cells, targetTable, ids[0]);
+                }
+                else {
+                    var targetCells = targetRow.children();
+                    targetCells[0].value += "," + ids[0];
+                    targetCells[targetCells.length - 1].textContent++;
                 }
 
-                $(tableName).append(tr);
-                $(this).remove();
+                if (cells[cells.length - 1].textContent > 1) {
+                    ids.shift();
+                    cells[0].value = ids.join(",");
+                    cells[cells.length - 1].textContent--;
+                }
+                else {
+                    $(this).remove();
+                }
             }
         }
 
-        $("#dbParts").on('click', 'tr:has(td)', switchToTable('#orderParts'));
-        $("#orderParts").on('click', 'tr:has(td)', switchToTable('#dbParts'));
+        function moveRowToTable(cells, tableName, id) {
+            var tr = $('<tr/>');
+            tr.append("<input id='item_ID' name='item.ID' type='hidden' value='" + id + "' />")
+            for (var i = 1; i < cells.length - 1; i++) {
+                tr.append("<td>" + cells[i].textContent + "</td>");
+            }
+
+            tr.append("<td>1</td>")
+            $(tableName).append(tr);
+        }
+
+
 
         function saveChanges() {
             var tableRows = document.querySelectorAll('#orderParts > tbody > tr');
             var array = [];
             for (var i = 0; i < tableRows.length; i++) {
                 var cells = tableRows[i].children;
-                var availablePart = {};
-                availablePart.ID = cells[0].value;
-                availablePart.Brand = cells[1].textContent;
-                availablePart.Type = cells[2].textContent;
-                availablePart.Price = cells[3].textContent.substr(1);
-                array.push(availablePart);
+                var ids = cells[0].value.split(",");
+                for (var j = 0; j < ids.length; j++) {
+                    var availablePart = {};
+                    availablePart.ID = ids[j];
+                    availablePart.Brand = cells[1].textContent;
+                    availablePart.Type = cells[2].textContent;
+                    availablePart.Price = cells[3].textContent.substr(1);
+                    array.push(availablePart);
+                }
             }
 
             var data = JSON.stringify({
@@ -134,15 +162,24 @@
                 "id": @Model.RepairOrder.ID,
             })
 
+            $("#saveChanges").prop("disabled", true);
+
             $.ajax({
                 type: "POST",
                 url: '/RepairOrders/Parts',
                 data: data,
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
+                success: function () {
+                    $("#saved").fadeIn(400).delay(1500).fadeOut(400);
+                },
                 error: function (error) {
                     alert("error:" + error.responseText);
                 },
+            }).done(function () {
+                setTimeout(function () {
+                    $("#saveChanges").prop("disabled", false);
+                }, 1900);
             })
         }
 

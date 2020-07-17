@@ -1,4 +1,4 @@
-﻿@model IEnumerable<RepairShop.Models.Part>
+﻿@model RepairShop.View_Models.PartsViewModel
 
 @{
     ViewBag.Title = "Index";
@@ -12,19 +12,20 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Brand)
+            @Html.DisplayNameFor(model => model.Parts[0].Brand)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Type)
+            @Html.DisplayNameFor(model => model.Parts[0].Type)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Price)
+            @Html.DisplayNameFor(model => model.Parts[0].Price)
         </th>
         <th></th>
+        <th>Available Parts</th>
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
+@foreach (var item in Model.Parts) {
     <tr>
         <td>
             @Html.DisplayFor(modelItem => item.Brand)
@@ -41,7 +42,10 @@
             @Html.ActionLink("Delete", "Delete", new { id=item.ID })
         </td>
         <td>
-            <input type="button" value="Add Available Part" onclick="location.href='@Url.Action("AddAvailablePart", "Parts", new { id = item.ID })'" />
+            @Model.AvailableParts.Count(x => x.Brand == item.Brand && x.Type == item.Type)
+        </td>
+        <td>
+            <input class="btn btn-default" type="button" value="Add Available Part" onclick="location.href='@Url.Action("AddAvailablePart", "Parts", new { id = item.ID })'" />
         </td>
     </tr>
 }

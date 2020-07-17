@@ -176,9 +176,17 @@
     <Compile Include="Controllers\RepairOrdersController.cs" />
     <Compile Include="DAL\ShopDbContext.cs" />
     <Compile Include="Extensions\EnumHelpers.cs" />
-    <Compile Include="Migrations\202007101308103_Init.cs" />
-    <Compile Include="Migrations\202007101308103_Init.Designer.cs">
-      <DependentUpon>202007101308103_Init.cs</DependentUpon>
+    <Compile Include="Migrations\202007170853574_Init.cs" />
+    <Compile Include="Migrations\202007170853574_Init.Designer.cs">
+      <DependentUpon>202007170853574_Init.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007170912501_EndMe.cs" />
+    <Compile Include="Migrations\202007170912501_EndMe.Designer.cs">
+      <DependentUpon>202007170912501_EndMe.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007171008293_AvailablePartActivity.cs" />
+    <Compile Include="Migrations\202007171008293_AvailablePartActivity.Designer.cs">
+      <DependentUpon>202007171008293_AvailablePartActivity.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AvailablePart.cs" />
@@ -196,6 +204,7 @@
     <Compile Include="Models\Repairman.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="View_Models\PartsViewModel.cs" />
     <Compile Include="View_Models\RepairOrderPartsViewModel.cs" />
     <Compile Include="View_Models\RepairOrdersViewModel.cs" />
   </ItemGroup>
@@ -204,6 +213,7 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\Parts.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -294,8 +304,14 @@
     <Content Include="Scripts\jquery-3.4.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202007101308103_Init.resx">
-      <DependentUpon>202007101308103_Init.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202007170853574_Init.resx">
+      <DependentUpon>202007170853574_Init.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007170912501_EndMe.resx">
+      <DependentUpon>202007170912501_EndMe.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007171008293_AvailablePartActivity.resx">
+      <DependentUpon>202007171008293_AvailablePartActivity.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

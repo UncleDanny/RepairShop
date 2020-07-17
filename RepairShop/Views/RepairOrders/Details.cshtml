@@ -62,7 +62,7 @@
             Total Price
         </dt>
         @{ 
-            decimal totalMoney = Model.Parts.Sum(x => x.Price * x.Count) + Model.Repairman.Wage;
+            decimal totalMoney = Model.Parts.Sum(x => x.Price) + Model.Repairman.Wage;
         }
         <dd>
             @Html.DisplayFor(i => totalMoney)
